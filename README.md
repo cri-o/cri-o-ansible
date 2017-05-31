@@ -11,4 +11,4 @@ use `kubeadm` and `CRI-O` (no `docker` no more). Simply run:
 ssh-copy-id root@<ip or hostname>
 ```
 
-You can then follow the `kubeadm` (docs)[https://kubernetes.io/docs/getting-started-guides/kubeadm/] to install Kubernetes.
+You can then follow the `kubeadm` [docs](https://kubernetes.io/docs/getting-started-guides/kubeadm/) to install Kubernetes.
