@@ -27,14 +27,15 @@
         - pkgconfig
         - json-glib-devel
         - skopeo-containers
-        - NetworkManager
         - docker
-    - name: Make testing directories to conform to testing standards
+    - name: Make directories
       file:
         path: "{{ item }}"
         state: directory
       with_items:
            - /usr/local/go
+           - /etc/systemd/system/kubelet.service.d/
+           - /var/lib/etcd
     - name: install Golang upstream in CentOS
       shell: |
               curl -fsSL "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz" \
@@ -46,11 +47,6 @@
         insertafter: 'EOF'
         regexp: 'export PATH=/usr/local/go/bin:$PATH'
         state: present
-    - name: enable and start NetworkManager
-      systemd:
-        name: NetworkManager
-        state: started
-        enabled: yes
     - name: update all
       yum: name=* state=latest
     - name: clone runc
@@ -62,7 +58,6 @@
         repo: https://github.com/kubernetes-incubator/cri-o
         dest: /root/src/github.com/kubernetes-incubator/cri-o
         version: kube-1.6.x
-        force: yes
     - name: clone CNI
       git:
         repo: https://github.com/containernetworking/plugins
@@ -89,8 +84,7 @@
               ./build.sh && \
               mkdir -p /opt/cni/bin && \
               cp bin/* /opt/cni/bin/ && \
-              mkdir -p /etc/cni/net.d && \
-              cp /root/src/github.com/kubernetes-incubator/cri-o/contrib/cni/99-loopback.conf /etc/cni/net.d
+              mkdir -p /etc/cni/net.d
     - name: run CRI-O with systemd cgroup manager
       replace:
         regexp: 'cgroupfs'
@@ -116,3 +110,28 @@
         state: started
         enabled: yes
         daemon_reload: yes
+    - name: "Stop iptables :("
+      service:
+        name: iptables
+        state: stopped
+      ignore_errors: yes
+    - name: "Disable iptables :("
+      service:
+        name: iptables
+        enabled: no
+      ignore_errors: yes"))"
+    - name: modprobe br_netfilter
+      command: "modprobe br_netfilter"
+    - name: tune sysctl
+      lineinfile:
+        line: "/proc/sys/net/bridge/bridge-nf-call-iptables = 1"
+        dest: /etc/sysctl.conf
+        insertafter: 'EOF'
+        regexp: '\/proc\/sys\/net\/bridge\/bridge-nf-call-iptables = 1'
+        state: present
+    - name: reload sysctl
+      command: "sysctl -p"
+    - name: systemd dropin for kubeadm
+      shell: |
+              sh -c 'echo "[Service]
+              Environment=\"KUBELET_EXTRA_ARGS=--enable-cri=true --container-runtime=remote --runtime-request-timeout=15m --image-service-endpoint /var/run/crio.sock --container-runtime-endpoint /var/run/crio.sock\"" > /etc/systemd/system/kubelet.service.d/0-crio.conf'
