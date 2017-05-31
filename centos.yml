@@ -1,0 +1,118 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+    - name: Make sure we have all required packages
+      yum:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - centos-release-openshift-origin
+        - wget
+        - git
+        - make
+        - gcc
+        - tar
+        - libseccomp-devel
+        - golang
+        - glib2-devel
+        - glibc-static
+        - container-selinux
+        - btrfs-progs-devel
+        - device-mapper-devel
+        - glibc-devel
+        - gpgme-devel
+        - libassuan-devel
+        - libgpg-error-devel
+        - pkgconfig
+        - json-glib-devel
+        - skopeo-containers
+        - NetworkManager
+        - docker
+    - name: Make testing directories to conform to testing standards
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+           - /usr/local/go
+    - name: install Golang upstream in CentOS
+      shell: |
+              curl -fsSL "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz" \
+              | tar -xzC /usr/local
+    - name: Set custom Golang path for CentOS
+      lineinfile:
+        dest: /root/.bashrc
+        line: 'export PATH=/usr/local/go/bin:$PATH'
+        insertafter: 'EOF'
+        regexp: 'export PATH=/usr/local/go/bin:$PATH'
+        state: present
+    - name: enable and start NetworkManager
+      systemd:
+        name: NetworkManager
+        state: started
+        enabled: yes
+    - name: update all
+      yum: name=* state=latest
+    - name: clone runc
+      git:
+        repo: https://github.com/opencontainers/runc
+        dest: /root/src/github.com/opencontainers/runc
+    - name: clone CRI-O
+      git:
+        repo: https://github.com/kubernetes-incubator/cri-o
+        dest: /root/src/github.com/kubernetes-incubator/cri-o
+        version: kube-1.6.x
+        force: yes
+    - name: clone CNI
+      git:
+        repo: https://github.com/containernetworking/plugins
+        dest: /root/src/github.com/containernetworking/plugins
+    - name: build runc
+      shell: |
+              cd /root/src/github.com/opencontainers/runc && \
+              export GOPATH=/root && \
+              make BUILDTAGS="seccomp selinux" && \
+              make install
+    - name: link runc
+      file: src=/usr/local/sbin/runc dest=/usr/bin/runc state=link
+    - name: build cri-o
+      shell: |
+              cd /root/src/github.com/kubernetes-incubator/cri-o && \
+              make install.tools && \
+              make && \
+              make install && \
+              make install.systemd && \
+              make install.config
+    - name: build CNI stuff
+      shell: |
+              cd /root/src/github.com/containernetworking/plugins && \
+              ./build.sh && \
+              mkdir -p /opt/cni/bin && \
+              cp bin/* /opt/cni/bin/ && \
+              mkdir -p /etc/cni/net.d && \
+              cp /root/src/github.com/kubernetes-incubator/cri-o/contrib/cni/99-loopback.conf /etc/cni/net.d
+    - name: run CRI-O with systemd cgroup manager
+      replace:
+        regexp: 'cgroupfs'
+        replace: 'systemd'
+        name: /etc/crio/crio.conf
+        backup: yes
+    - name: run with overlay2
+      replace:
+        regexp: 'storage_driver = ""'
+        replace: 'storage_driver = "overlay2"'
+        name: /etc/crio/crio.conf
+        backup: yes
+    - name: add overlay2 storage opts on RHEL/CentOS
+      lineinfile:
+        dest: /etc/crio/crio.conf
+        line: '"overlay2.override_kernel_check=1"'
+        insertafter: 'storage_option = \['
+        regexp: 'overlay2\.override_kernel_check=1'
+        state: present
+    - name: enable and start CRI-O
+      systemd:
+        name: crio
+        state: started
+        enabled: yes
+        daemon_reload: yes
