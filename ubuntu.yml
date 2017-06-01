@@ -3,31 +3,36 @@
   remote_user: root
   tasks:
     - name: Make sure we have all required packages
-      yum:
+      package:
         name: "{{ item }}"
         state: latest
       with_items:
-        - centos-release-openshift-origin
-        - wget
-        - git
-        - make
-        - gcc
-        - tar
-        - libseccomp-devel
-        - golang
-        - glib2-devel
-        - glibc-static
-        - container-selinux
-        - btrfs-progs-devel
-        - device-mapper-devel
-        - glibc-devel
-        - gpgme-devel
-        - libassuan-devel
-        - libgpg-error-devel
-        - pkgconfig
-        - json-glib-devel
-        - skopeo-containers
-        - docker
+        - apt-transport-https
+        - build-essential
+        - curl
+        - gawk
+        - iptables
+        - pkg-config
+        - libaio-dev
+        - libcap-dev
+        - libprotobuf-dev
+        - libseccomp2
+        - libseccomp-dev
+        - protobuf-compiler
+        - python-minimal
+        - libglib2.0-dev
+        - libjson-glib-dev
+        - libapparmor-dev
+        - btrfs-tools
+        - libdevmapper1.02.1
+        - libdevmapper-dev
+        - libgpgme11-dev
+        - aptitude
+    - name: Update and upgrade apt packages
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400 #One day
     - name: Make directories
       file:
         path: "{{ item }}"
@@ -36,19 +41,12 @@
            - /usr/local/go
            - /etc/systemd/system/kubelet.service.d/
            - /var/lib/etcd
-    - name: install Golang upstream in CentOS
-      shell: |
-              curl -fsSL "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz" \
-              | tar -xzC /usr/local
-    - name: Set custom Golang path for CentOS
-      lineinfile:
-        dest: /root/.bashrc
-        line: 'export PATH=/usr/local/go/bin:$PATH'
-        insertafter: 'EOF'
-        regexp: 'export PATH=\/usr\/local\/go\/bin:\$PATH'
-        state: present
-    - name: update all
-      yum: name=* state=latest
+    #- name: install Golang upstream
+      #shell: |
+              #curl -fsSL "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz" \
+              #| tar -xzC /usr/local
+    - name: link golang
+      file: src=/usr/local/go/bin/go dest=/usr/bin/go state=link
     - name: clone runc
       git:
         repo: https://github.com/opencontainers/runc
@@ -82,6 +80,8 @@
               make install && \
               make install.systemd && \
               make install.config
+      environment:
+        PATH: "/usr/local/bin/go:{{ (ansible_env|default({})).PATH|default('') }}"
       when: clone_crio.changed
     - name: build CNI stuff
       shell: |
@@ -102,7 +102,7 @@
         replace: 'storage_driver = "overlay2"'
         name: /etc/crio/crio.conf
         backup: yes
-    - name: add overlay2 storage opts on RHEL/CentOS
+    - name: add overlay2 storage opts
       lineinfile:
         dest: /etc/crio/crio.conf
         line: '"overlay2.override_kernel_check=1"'

@@ -20,6 +20,10 @@ if [ -z "$address" ]; then
 	exit 1
 fi
 
-sed -e "s/%HOST%/$1/g" hosts.template > hosts
+if [ "$os" == "ubuntu" ]; then
+	sed -e "s/%HOST%/$address ansible_python_interpreter='python3'/g" hosts.template > hosts
+else
+	sed -e "s/%HOST%/$address/g" hosts.template > hosts
+fi
 
 ansible-playbook -i hosts $play
