@@ -53,21 +53,25 @@
       git:
         repo: https://github.com/opencontainers/runc
         dest: /root/src/github.com/opencontainers/runc
+      register: clone_runc
     - name: clone CRI-O
       git:
         repo: https://github.com/kubernetes-incubator/cri-o
         dest: /root/src/github.com/kubernetes-incubator/cri-o
         version: kube-1.6.x
+      register: clone_crio
     - name: clone CNI
       git:
         repo: https://github.com/containernetworking/plugins
         dest: /root/src/github.com/containernetworking/plugins
+      register: clone_cni
     - name: build runc
       shell: |
               cd /root/src/github.com/opencontainers/runc && \
               export GOPATH=/root && \
               make BUILDTAGS="seccomp selinux" && \
               make install
+      when: clone_runc.changed
     - name: link runc
       file: src=/usr/local/sbin/runc dest=/usr/bin/runc state=link
     - name: build cri-o
@@ -78,6 +82,7 @@
               make install && \
               make install.systemd && \
               make install.config
+      when: clone_crio.changed
     - name: build CNI stuff
       shell: |
               cd /root/src/github.com/containernetworking/plugins && \
@@ -85,6 +90,7 @@
               mkdir -p /opt/cni/bin && \
               cp bin/* /opt/cni/bin/ && \
               mkdir -p /etc/cni/net.d
+      when: clone_cni.changed
     - name: run CRI-O with systemd cgroup manager
       replace:
         regexp: 'cgroupfs'
