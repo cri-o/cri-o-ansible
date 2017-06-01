@@ -112,6 +112,7 @@
         daemon_reload: yes
     - name: modprobe br_netfilter
       command: "modprobe br_netfilter"
+      ignore_errors: true
     - name: tune sysctl
       lineinfile:
         line: "net/bridge/bridge-nf-call-iptables = 1"
@@ -119,8 +120,10 @@
         insertafter: 'EOF'
         regexp: '\/net\/bridge\/bridge-nf-call-iptables = 1'
         state: present
+      ignore_errors: true
     - name: reload sysctl
       command: "sysctl -p"
+      ignore_errors: true
     - name: systemd dropin for kubeadm
       shell: |
               sh -c 'echo "[Service]
