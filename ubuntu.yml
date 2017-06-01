@@ -41,10 +41,10 @@
            - /usr/local/go
            - /etc/systemd/system/kubelet.service.d/
            - /var/lib/etcd
-    #- name: install Golang upstream
-      #shell: |
-              #curl -fsSL "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz" \
-              #| tar -xzC /usr/local
+    - name: install Golang upstream
+      shell: |
+              curl -fsSL "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz" \
+              | tar -xzC /usr/local
     - name: link golang
       file: src=/usr/local/go/bin/go dest=/usr/bin/go state=link
     - name: clone runc
