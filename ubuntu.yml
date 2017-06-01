@@ -42,6 +42,7 @@
            - /etc/systemd/system/kubelet.service.d/
            - /var/lib/etcd
            - /etc/containers
+           - /etc/cni/net.d
     - name: install Golang upstream
       shell: |
               curl -fsSL "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz" \

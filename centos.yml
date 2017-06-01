@@ -36,6 +36,7 @@
            - /usr/local/go
            - /etc/systemd/system/kubelet.service.d/
            - /var/lib/etcd
+           - /etc/cni/net.d
     - name: install Golang upstream in CentOS
       shell: |
               curl -fsSL "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz" \
@@ -135,3 +136,8 @@
               Environment=\"KUBELET_EXTRA_ARGS=--enable-cri=true --container-runtime=remote --runtime-request-timeout=15m --image-service-endpoint /var/run/crio.sock --container-runtime-endpoint /var/run/crio.sock\"" > /etc/systemd/system/kubelet.service.d/0-crio.conf'
     - name: flush iptables
       command: "iptables -F"
+    - name: Permanently disable selinux
+      lineinfile:
+        dest: /etc/selinux/config
+        line: 'SELINUX=permissive'
+        regexp: '^SELINUX='
