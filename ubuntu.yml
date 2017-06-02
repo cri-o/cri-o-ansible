@@ -83,8 +83,6 @@
               make install.systemd && \
               make install.config && \
               cp test/policy.json /etc/containers/policy.json
-      environment:
-        PATH: "/usr/local/bin/go:{{ (ansible_env|default({})).PATH|default('') }}"
       when: clone_crio.changed
     - name: build CNI stuff
       shell: |
