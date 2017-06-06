@@ -25,6 +25,7 @@
         - libgpg-error-devel
         - pkgconfig
         - skopeo-containers
+        - iptables
       when: ansible_distribution == 'Fedora'
     - name: Make sure we have all required packages on RHEL/CentOS
       when: (ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
