@@ -5,6 +5,7 @@ Create an ansible `hosts` file (adjust anything needed like `ansible_python_inte
 ```sh
 $ cat hosts
 192.168.1.122 ansible_python_interpreter='python3'
+192.168.1.123
 ```
 
 Then simply run:
