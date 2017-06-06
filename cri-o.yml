@@ -2,7 +2,32 @@
 - hosts: all
   remote_user: root
   tasks:
-    - name: Make sure we have all required packages
+    - name: Make sure we have all required packages on Fedora
+      dnf:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - wget
+        - git
+        - make
+        - gcc
+        - tar
+        - libseccomp-devel
+        - golang
+        - glib2-devel
+        - glibc-static
+        - container-selinux
+        - btrfs-progs-devel
+        - device-mapper-devel
+        - glibc-devel
+        - gpgme-devel
+        - libassuan-devel
+        - libgpg-error-devel
+        - pkgconfig
+        - skopeo-containers
+      when: ansible_distribution == 'Fedora'
+    - name: Make sure we have all required packages on RHEL/CentOS
+      when: (ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
       yum:
         name: "{{ item }}"
         state: latest
@@ -27,6 +52,33 @@
         - json-glib-devel
         - skopeo-containers
         - docker
+    - name: Make sure we have all required packages on Ubuntu
+      package:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - apt-transport-https
+        - build-essential
+        - curl
+        - gawk
+        - iptables
+        - pkg-config
+        - libaio-dev
+        - libcap-dev
+        - libprotobuf-dev
+        - libseccomp2
+        - libseccomp-dev
+        - protobuf-compiler
+        - python-minimal
+        - libglib2.0-dev
+        - libjson-glib-dev
+        - libapparmor-dev
+        - btrfs-tools
+        - libdevmapper1.02.1
+        - libdevmapper-dev
+        - libgpgme11-dev
+        - aptitude
+      when: ansible_distribution == 'Ubuntu'
     - name: Make directories
       file:
         path: "{{ item }}"
@@ -36,19 +88,36 @@
            - /etc/systemd/system/kubelet.service.d/
            - /var/lib/etcd
            - /etc/cni/net.d
-    - name: install Golang upstream in CentOS
+           - /etc/containers
+    - name: install Golang upstream
       shell: |
               curl -fsSL "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz" \
               | tar -xzC /usr/local
-    - name: Set custom Golang path for CentOS
+    - name: Set custom Golang path in RHEL/CentOS/Fedora
       lineinfile:
         dest: /root/.bashrc
         line: 'export PATH=/usr/local/go/bin:$PATH'
         insertafter: 'EOF'
         regexp: 'export PATH=\/usr\/local\/go\/bin:\$PATH'
         state: present
-    - name: update all
+      when: (ansible_distribution == 'Fedora' or ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
+    - name: link golang in Ubuntu
+      file: src=/usr/local/go/bin/go dest=/usr/bin/go state=link
+      when: ansible_distribution == 'Ubuntu'
+    - name: Update all in Ubuntu
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400 #One day
+      when: ansible_distribution == 'Ubuntu'
+    - name: update all in RHEL/CentOS
       yum: name=* state=latest
+      when: ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS'
+    - name: Update all packages on Fedora
+      dnf:
+        name: '*'
+        state: latest
+      when: ansible_distribution == 'Fedora'
     - name: clone runc
       git:
         repo: https://github.com/opencontainers/runc
@@ -83,6 +152,10 @@
               make install.systemd && \
               make install.config
       when: clone_crio.changed
+    - name: install policy.json in Ubuntu
+      shell: |
+              cd /root/src/github.com/kubernetes-incubator/cri-o && \
+              cp test/policy.json /etc/containers/policy.json
     - name: build CNI stuff
       shell: |
               cd /root/src/github.com/containernetworking/plugins && \
@@ -96,6 +169,7 @@
         replace: 'systemd'
         name: /etc/crio/crio.conf
         backup: yes
+      when: (ansible_distribution == 'Fedora' or ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
     - name: run with overlay2
       replace:
         regexp: 'storage_driver = ""'
@@ -109,6 +183,7 @@
         insertafter: 'storage_option = \['
         regexp: 'overlay2\.override_kernel_check=1'
         state: present
+      when: (ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
     - name: enable and start CRI-O
       systemd:
         name: crio
@@ -140,3 +215,4 @@
         dest: /etc/selinux/config
         line: 'SELINUX=permissive'
         regexp: '^SELINUX='
+      when: (ansible_distribution == 'Fedora' or ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')

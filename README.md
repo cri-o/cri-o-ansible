@@ -1,10 +1,16 @@
-This playbook provisions a CentOS 7.3/Ubuntu 16.04 machine with everything you need in order to
+This playbook provisions a CentOS 7.3/Ubuntu 16.04/RHEL/Fedora 25+ machine with everything you need in order to
 use `kubeadm` and `CRI-O` (no `docker` no more). Simply run:
 
+Create an ansible `hosts` file (adjust anything needed like `ansible_python_interpreter`):
 ```sh
-./run.sh centos <IP or hostname>
-# if you're on Ubuntu
-./run.sh ubuntu <IP or hostname>
+$ cat hosts
+192.168.1.122 ansible_python_interpreter='python3'
+```
+
+Then simply run:
+
+```sh
+$ ansible-playbook -i hosts cri-o.yml
 ```
 
 **make sure the machine is reachable via SSH w/o password input**
