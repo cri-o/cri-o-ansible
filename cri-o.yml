@@ -51,7 +51,6 @@
         - pkgconfig
         - json-glib-devel
         - skopeo-containers
-        - docker
     - name: Make sure we have all required packages on Ubuntu
       package:
         name: "{{ item }}"
