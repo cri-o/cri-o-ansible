@@ -216,3 +216,6 @@
         line: 'SELINUX=permissive'
         regexp: '^SELINUX='
       when: (ansible_distribution == 'Fedora' or ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
+    - name: disable selinux
+      command: "setenforce 0"
+      when: (ansible_distribution == 'Fedora' or ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
