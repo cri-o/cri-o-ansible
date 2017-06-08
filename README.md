@@ -21,6 +21,7 @@ $ ansible-playbook -i hosts cri-o.yml
 ```
 
 What is `cri-o-ansible` _not_ doing?
+-
 
 - `cri-o-ansible` is not going to install any CNI network configuration. It just installs CNI plugins. Network configuration is left to Kubernetes and Openshift (or you following [this](https://github.com/kubernetes-incubator/cri-o/blob/master/contrib/cni/README.md))
 
