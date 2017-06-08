@@ -103,9 +103,8 @@
         regexp: 'export PATH=\/usr\/local\/go\/bin:\$PATH'
         state: present
       when: (ansible_distribution == 'Fedora' or ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
-    - name: link golang in Ubuntu
+    - name: link golang
       file: src=/usr/local/go/bin/go dest=/usr/bin/go state=link
-      when: ansible_distribution == 'Ubuntu'
     - name: Update all in Ubuntu
       apt:
         upgrade: yes
@@ -124,25 +123,21 @@
       git:
         repo: https://github.com/opencontainers/runc
         dest: /root/src/github.com/opencontainers/runc
-      register: clone_runc
     - name: clone CRI-O
       git:
         repo: https://github.com/kubernetes-incubator/cri-o
         dest: /root/src/github.com/kubernetes-incubator/cri-o
         version: kube-1.6.x
-      register: clone_crio
     - name: clone CNI
       git:
         repo: https://github.com/containernetworking/plugins
         dest: /root/src/github.com/containernetworking/plugins
-      register: clone_cni
     - name: build runc
       shell: |
               cd /root/src/github.com/opencontainers/runc && \
               export GOPATH=/root && \
               make BUILDTAGS="seccomp selinux" && \
               make install
-      when: clone_runc.changed
     - name: link runc
       file: src=/usr/local/sbin/runc dest=/usr/bin/runc state=link
     - name: build cri-o
@@ -153,7 +148,6 @@
               make install && \
               make install.systemd && \
               make install.config
-      when: clone_crio.changed
     - name: install policy.json in Ubuntu
       shell: |
               cd /root/src/github.com/kubernetes-incubator/cri-o && \
@@ -164,7 +158,6 @@
               ./build.sh && \
               mkdir -p /opt/cni/bin && \
               cp bin/* /opt/cni/bin/
-      when: clone_cni.changed
     - name: run CRI-O with systemd cgroup manager
       replace:
         regexp: 'cgroupfs'
