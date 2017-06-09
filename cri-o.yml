@@ -54,6 +54,9 @@
         - pkgconfig
         - json-glib-devel
         - skopeo-containers
+    - name: update on ubuntu
+      command: "apt-get update"
+      when: ansible_distribution == 'Ubuntu'
     - name: Make sure we have all required packages on Ubuntu
       package:
         name: "{{ item }}"
