@@ -1,6 +1,6 @@
 ---
 - hosts: all
-  remote_user: root
+  become: true
   tasks:
     - name: Make sure we have all required packages on Fedora
       dnf:
