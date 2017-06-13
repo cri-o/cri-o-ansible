@@ -95,9 +95,10 @@
            - /etc/cni/net.d
            - /etc/containers
     - name: install Golang upstream
-      shell: |
-              curl -fsSL "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz" \
-              | tar -xzC /usr/local
+      unarchive:
+        src: "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz"
+        dest: "/usr/local"
+        remote_src: True
     - name: Set custom Golang path in RHEL/CentOS/Fedora
       lineinfile:
         dest: /root/.bashrc
