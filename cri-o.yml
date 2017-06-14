@@ -34,7 +34,6 @@
       when: ansible_distribution == 'Fedora'
 
     - name: Make sure we have all required packages on RHEL/CentOS
-      when: (ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
       yum:
         name: "{{ item }}"
         state: latest
@@ -59,6 +58,7 @@
         - pkgconfig
         - json-glib-devel
         - skopeo-containers
+      when: ansible_distribution in ['RedHat', 'CentOS']
 
     - name: Make sure we have all required packages on Ubuntu
       package:
@@ -153,7 +153,7 @@
         replace: 'systemd'
         name: /etc/crio/crio.conf
         backup: yes
-      when: (ansible_distribution == 'Fedora' or ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
+      when: ansible_distribution in ['Fedora', 'RedHat', 'CentOS']
 
     - name: run with overlay2
       replace:
@@ -169,7 +169,7 @@
         insertafter: 'storage_option = \['
         regexp: 'overlay2\.override_kernel_check=1'
         state: present
-      when: (ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
+      when: ansible_distribution in ['RedHat', 'CentOS']
 
     - name: enable and start CRI-O
       systemd:
@@ -208,8 +208,8 @@
         dest: /etc/selinux/config
         line: 'SELINUX=permissive'
         regexp: '^SELINUX='
-      when: (ansible_distribution == 'Fedora' or ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
+      when: ansible_distribution in ['Fedora', 'RedHat', 'CentOS']
 
     - name: disable selinux
       command: "setenforce 0"
-      when: (ansible_distribution == 'Fedora' or ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
+      when: ansible_distribution in ['Fedora', 'RedHat', 'CentOS']
