@@ -1,6 +1,6 @@
 ---
 - hosts: all
-  remote_user: root
+  become: true
   tasks:
     - name: Make sure we have all required packages on Fedora
       dnf:
@@ -54,8 +54,11 @@
         - pkgconfig
         - json-glib-devel
         - skopeo-containers
-    - name: update on ubuntu
-      command: "apt-get update"
+    - name: Update all in Ubuntu
+      apt:
+        upgrade: dist
+        update_cache: yes
+        cache_valid_time: 86400 #One day
       when: ansible_distribution == 'Ubuntu'
     - name: Make sure we have all required packages on Ubuntu
       package:
@@ -95,9 +98,10 @@
            - /etc/cni/net.d
            - /etc/containers
     - name: install Golang upstream
-      shell: |
-              curl -fsSL "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz" \
-              | tar -xzC /usr/local
+      unarchive:
+        src: "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz"
+        dest: "/usr/local"
+        remote_src: True
     - name: Set custom Golang path in RHEL/CentOS/Fedora
       lineinfile:
         dest: /root/.bashrc
@@ -108,12 +112,6 @@
       when: (ansible_distribution == 'Fedora' or ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
     - name: link golang
       file: src=/usr/local/go/bin/go dest=/usr/bin/go state=link
-    - name: Update all in Ubuntu
-      apt:
-        upgrade: yes
-        update_cache: yes
-        cache_valid_time: 86400 #One day
-      when: ansible_distribution == 'Ubuntu'
     - name: update all in RHEL/CentOS
       yum: name=* state=latest
       when: ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS'
