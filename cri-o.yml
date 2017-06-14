@@ -56,7 +56,7 @@
         - skopeo-containers
     - name: Update all in Ubuntu
       apt:
-        upgrade: yes
+        upgrade: dist
         update_cache: yes
         cache_valid_time: 86400 #One day
       when: ansible_distribution == 'Ubuntu'
