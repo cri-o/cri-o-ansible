@@ -1,0 +1,34 @@
+---
+- block:
+  - name: Install Clear Containers repository key (Ubuntu)
+    apt_key:
+      url: https://download.opensuse.org/repositories/home:clearlinux:preview:clear-containers-2.1/xUbuntu_{{ ansible_lsb.release }}/Release.key
+      state: present
+
+  - name: Install Clear Containers repository (Ubuntu)
+    apt_repository:
+      repo: "deb http://download.opensuse.org/repositories/home:/clearlinux:/preview:/clear-containers-2.1/xUbuntu_{{ ansible_lsb.release }}/ /"
+      state: present
+      filename: cc-oci-runtime
+
+  - name: Install Clear Containers (Ubuntu)
+    apt:
+      name: cc-oci-runtime
+      update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- block:
+  - name: Install Clear Containers repository (Fedora)
+    yum_repository:
+      name: clear-containers-2.1
+      description: Clear Containers 2.1
+      baseurl: "http://download.opensuse.org/repositories/home:/clearlinux:/preview:/clear-containers-2.1/Fedora_{{ ansible_distribution_version }}/"
+      gpgkey: "http://download.opensuse.org/repositories/home:/clearlinux:/preview:/clear-containers-2.1/Fedora_{{ ansible_distribution_version }}//repodata/repomd.xml.key"
+
+  - name: Install Clear Containers (Fedora)
+    dnf:
+      name: "{{ item }}"
+    with_items:
+      - cc-oci-runtime
+      - linux-container
+  when: ansible_distribution == 'Fedora'
