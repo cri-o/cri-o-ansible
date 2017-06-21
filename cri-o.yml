@@ -11,26 +11,26 @@
         name: "{{ item }}"
         state: latest
       with_items:
-        - wget
-        - git
-        - make
-        - gcc
-        - tar
-        - libseccomp-devel
-        - golang
-        - go-md2man
-        - glib2-devel
-        - glibc-static
-        - container-selinux
         - btrfs-progs-devel
+        - container-selinux
         - device-mapper-devel
+        - gcc
+        - git
+        - glib2-devel
         - glibc-devel
+        - glibc-static
+        - go-md2man
+        - golang
         - gpgme-devel
+        - iptables
         - libassuan-devel
         - libgpg-error-devel
+        - libseccomp-devel
+        - make
         - pkgconfig
         - skopeo-containers
-        - iptables
+        - tar
+        - wget
       when: ansible_distribution == 'Fedora'
 
     - name: Make sure we have all required packages on RHEL/CentOS
@@ -38,26 +38,26 @@
         name: "{{ item }}"
         state: latest
       with_items:
-        - wget
-        - git
-        - make
-        - gcc
-        - tar
-        - libseccomp-devel
-        - golang
-        - go-md2man
-        - glib2-devel
-        - glibc-static
-        - container-selinux
         - btrfs-progs-devel
+        - container-selinux
         - device-mapper-devel
+        - gcc
+        - git
+        - glib2-devel
         - glibc-devel
+        - glibc-static
+        - go-md2man
+        - golang
         - gpgme-devel
+        - json-glib-devel
         - libassuan-devel
         - libgpg-error-devel
+        - libseccomp-devel
+        - make
         - pkgconfig
-        - json-glib-devel
         - skopeo-containers
+        - tar
+        - wget
       when: ansible_distribution in ['RedHat', 'CentOS']
 
     - name: Make sure we have all required packages on Ubuntu
@@ -66,26 +66,26 @@
         state: latest
       with_items:
         - apt-transport-https
+        - aptitude
+        - btrfs-tools
         - build-essential
         - curl
         - gawk
         - iptables
-        - pkg-config
         - libaio-dev
+        - libapparmor-dev
         - libcap-dev
+        - libdevmapper-dev
+        - libdevmapper1.02.1
+        - libglib2.0-dev
+        - libgpgme11-dev
+        - libjson-glib-dev
         - libprotobuf-dev
-        - libseccomp2
         - libseccomp-dev
+        - libseccomp2
+        - pkg-config
         - protobuf-compiler
         - python-minimal
-        - libglib2.0-dev
-        - libjson-glib-dev
-        - libapparmor-dev
-        - btrfs-tools
-        - libdevmapper1.02.1
-        - libdevmapper-dev
-        - libgpgme11-dev
-        - aptitude
       when: ansible_distribution == 'Ubuntu'
 
     - name: Make directories
