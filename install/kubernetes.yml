@@ -1,0 +1,32 @@
+---
+- block:
+    - name: Install k8s repository key (Ubuntu)
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Install k8s repository (Ubuntu)
+      apt_repository:
+        repo: "deb http://apt.kubernetes.io/ kubernetes-{{ ansible_distribution_release }} main"
+        state: present
+        filename: kubernetes
+
+    - name: Update apt (Ubuntu)
+      apt: update_cache=yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: Install k8s repository (Fedora/RHEL/CentOS)
+  yum_repository:
+    name: kubernetes
+    description: kubernetes
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    gpgkey: https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+  when: ansible_distribution in ['Fedora', 'RedHat', 'CentOS']
+
+- name: Install k8s
+  package: name={{ item }}
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+    - kubernetes-cni

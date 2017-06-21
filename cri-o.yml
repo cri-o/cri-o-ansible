@@ -2,6 +2,9 @@
 - hosts: all
   become: true
   tasks:
+    - include: install/kubernetes.yml
+    - include: install/golang.yml
+
     - name: Make sure we have all required packages on Fedora
       dnf:
         name: "{{ item }}"
@@ -97,21 +100,6 @@
            - /var/lib/etcd
            - /etc/cni/net.d
            - /etc/containers
-    - name: install Golang upstream
-      unarchive:
-        src: "https://golang.org/dl/go1.8.3.linux-amd64.tar.gz"
-        dest: "/usr/local"
-        remote_src: True
-    - name: Set custom Golang path in RHEL/CentOS/Fedora
-      lineinfile:
-        dest: /root/.bashrc
-        line: 'export PATH=/usr/local/go/bin:$PATH'
-        insertafter: 'EOF'
-        regexp: 'export PATH=\/usr\/local\/go\/bin:\$PATH'
-        state: present
-      when: (ansible_distribution == 'Fedora' or ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS')
-    - name: link golang
-      file: src=/usr/local/go/bin/go dest=/usr/bin/go state=link
     - name: update all in RHEL/CentOS
       yum: name=* state=latest
       when: ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS'

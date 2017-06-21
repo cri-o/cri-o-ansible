@@ -20,7 +20,7 @@ Then simply run:
 $ ansible-playbook -i hosts cri-o.yml -u <user>
 ```
 
-You can then follow the `kubeadm` [docs](https://kubernetes.io/docs/getting-started-guides/kubeadm/) to install Kubernetes. I've tested the whole flow with a [custom Flannel pod network](https://gist.githubusercontent.com/sameo/cf92f65ae54a87807ed294f3de658bcf/raw/95d9a66a2268b779dbb25988541136d1ed2fbfe2/flannel.yaml), the official one seems broken.
+This playbook installs kubernetes software so you can follow the `kubeadm` [docs](https://kubernetes.io/docs/getting-started-guides/kubeadm/) to setup a Kubernetes cluster. I've tested the whole flow with a [custom Flannel pod network](https://gist.githubusercontent.com/sameo/cf92f65ae54a87807ed294f3de658bcf/raw/95d9a66a2268b779dbb25988541136d1ed2fbfe2/flannel.yaml), the official one seems broken.
 
 What is `cri-o-ansible` _not_ doing?
 -
