@@ -2,6 +2,8 @@
 - hosts: all
   become: true
   tasks:
+    - include: install/kubernetes.yml
+
     - name: Make sure we have all required packages on Fedora
       dnf:
         name: "{{ item }}"
