@@ -2,6 +2,7 @@
 - hosts: all
   become: true
   tasks:
+    - include: install/os_updates.yml
     - include: install/kubernetes.yml
     - include: install/golang.yml
 
@@ -57,12 +58,6 @@
         - pkgconfig
         - json-glib-devel
         - skopeo-containers
-    - name: Update all in Ubuntu
-      apt:
-        upgrade: dist
-        update_cache: yes
-        cache_valid_time: 86400 #One day
-      when: ansible_distribution == 'Ubuntu'
     - name: Make sure we have all required packages on Ubuntu
       package:
         name: "{{ item }}"
@@ -100,14 +95,6 @@
            - /var/lib/etcd
            - /etc/cni/net.d
            - /etc/containers
-    - name: update all in RHEL/CentOS
-      yum: name=* state=latest
-      when: ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS'
-    - name: Update all packages on Fedora
-      dnf:
-        name: '*'
-        state: latest
-      when: ansible_distribution == 'Fedora'
     - name: clone runc
       git:
         repo: https://github.com/opencontainers/runc
