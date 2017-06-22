@@ -1,0 +1,19 @@
+---
+- name: Update all in Ubuntu
+  apt:
+    upgrade: dist
+    update_cache: yes
+    cache_valid_time: 86400 #One day
+  when: ansible_distribution == 'Ubuntu'
+
+- name: update all in RHEL/CentOS
+  yum:
+    name: '*'
+    state: latest
+  when: ansible_distribution in ['RedHat', 'CentOS']
+
+- name: Update all packages on Fedora
+  dnf:
+    name: '*'
+    state: latest
+  when: ansible_distribution == 'Fedora'
