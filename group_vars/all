@@ -1,0 +1,4 @@
+---
+# OCI runtime which crio will be using
+# select either 'runc' or 'cc-oci-runtime'
+runtime: runc

@@ -5,6 +5,8 @@
     - include: install/os_updates.yml
     - include: install/kubernetes.yml
     - include: install/golang.yml
+    - include: install/clearcontainers.yml
+      when: runtime == "cc-oci-runtime"
 
     - name: Make sure we have all required packages on Fedora
       dnf:
@@ -170,6 +172,23 @@
         regexp: 'overlay2\.override_kernel_check=1'
         state: present
       when: ansible_distribution in ['RedHat', 'CentOS']
+
+    - block:
+      - name: Use Clear Containers for Untrusted Workloads
+        ini_file:
+          backup: yes
+          section: crio.runtime
+          option: runtime_untrusted_workload
+          value: '"/usr/bin/cc-oci-runtime.sh"'
+          path: /etc/crio/crio.conf
+      - name: Set default workload trust
+        ini_file:
+          backup: yes
+          section: crio.runtime
+          option: default_workload_trust
+          value: '"untrusted"'
+          path: /etc/crio/crio.conf
+      when: runtime == "cc-oci-runtime"
 
     - name: enable and start CRI-O
       systemd:
