@@ -125,7 +125,7 @@
               make install
 
     - name: link runc
-      file: src=/usr/local/sbin/runc dest=/usr/bin/runc state=link
+      file: src=/usr/local/sbin/runc dest=/usr/bin/runc state=link force=yes
 
     - name: build cri-o
       shell: |
